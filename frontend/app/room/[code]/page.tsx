@@ -1,151 +1,86 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import type { Room } from "@/interfaces/Room";
-import { getOrCreatePlayerId } from "@/lib/player";
-import { getSession } from "@/lib/storage/player-session";
-import {
-    clearRoomSession,
-    getRoomSession,
-    saveRoomSession,
-} from "@/lib/storage/room-session";
+import { useRoom } from "@/hooks/useRoom";
+import { usePlayer } from "@/hooks/usePlayer";
+import { clearRoomSession } from "@/lib/storage/room-session";
 import socket from "@/lib/socket";
-import { startGame } from "@/lib/storage/game-session";
 
 const categoryLabels = {
     geography: "Geografia",
 } as const;
 
-const modeLabels = {
-    flags: "Bandeiras",
-    capitals: "Capitais",
-    continents: "Continentes",
-} as const;
-
 export default function RoomPage() {
     const router = useRouter();
-    const params = useParams<{ code: string }>();
-    const [playerId, setPlayerId] = useState("");
-    const [room, setRoom] = useState<Room | null>(null);
-    const [error, setError] = useState("");
 
-    const roomCode = useMemo(() => {
-        const code = params?.code;
+    const { room, playerId, error, roomCode } = useRoom();
+    const { session } = usePlayer();
 
-        if (typeof code === "string" && code.trim()) {
-            return code.toUpperCase();
-        }
+    function handleStart() {
+        if (!session || !roomCode) return;
 
-        return "";
-    }, [params]);
-
-    useEffect(() => {
-        const session = getSession();
-
-        if (!session) {
-            router.replace("/join");
-            return;
-        }
-
-        const persisted = getRoomSession();
-        setPlayerId(getOrCreatePlayerId());
-
-        if (!roomCode && persisted?.code) {
-            router.replace(`/room/${persisted.code}`);
-            return;
-        }
-
-        if (!roomCode) {
-            router.replace("/join");
-            return;
-        }
-
-        saveRoomSession({
-            code: roomCode,
-        });
-
-        function handleRoomUpdate(nextRoom: Room) {
-            setRoom(nextRoom);
-
-            if (nextRoom.status === "playing") {
-                router.push(`/room/${nextRoom.code}/game`);
-            }
-        }
-
-        function handleError(payload: { message?: string }) {
-            setError(payload.message ?? "Erro ao carregar sala.");
-        }
-
-        socket.on("room:update", handleRoomUpdate);
-        socket.on("room:error", handleError);
-
-        socket.emit("room:join", {
+        socket.emit("game:start", {
             roomCode,
             playerId: session.playerId,
         });
+    }
 
-        return () => {
-            socket.off("room:update", handleRoomUpdate);
-            socket.off("room:error", handleError);
-        };
-    }, [roomCode, router]);
-    useEffect(() => {
-        function handleGameStarted() {
-            router.push(`/room/${roomCode}/game`);
-        }
-
-        socket.on("game:started", handleGameStarted);
-
-        return () => {
-            socket.off("game:started", handleGameStarted);
-        };
-    }, [roomCode, router]);
+    function handleLeave() {
+        clearRoomSession();
+        router.push("/");
+    }
 
     return (
         <main className="min-h-screen bg-(--bg-primary) px-6 py-10">
-            <div className="mx-auto w-full max-w-5xl">
-                <div className="mb-6 flex items-center justify-between gap-4">
+            <div className="mx-auto max-w-5xl">
+                <header className="mb-6 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Sala {roomCode || "-"}</h1>
+                        <h1 className="text-3xl font-bold">
+                            Sala {roomCode || "-"}
+                        </h1>
+
                         <p className="text-(--text-secondary)">
                             Aguarde os jogadores entrarem.
                         </p>
                     </div>
 
                     <button
-                        type="button"
-                        onClick={() => {
-                            clearRoomSession();
-                            router.push("/");
-                        }}
-                        className="rounded-lg border border-(--border-color) px-4 py-2 text-sm"
+                        onClick={handleLeave}
+                        className="rounded-lg border border-(--border-color) px-4 py-2"
                     >
                         Sair
                     </button>
-                </div>
+                </header>
 
-                {error ? (
-                    <p className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-500">
+                {error && (
+                    <p className="mb-6 rounded-lg bg-red-500/10 p-3 text-red-500">
                         {error}
                     </p>
-                ) : null}
+                )}
 
                 <section className="rounded-2xl border border-(--border-color) bg-(--bg-surface) p-6 shadow-lg">
                     <div className="mb-6 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                         <p>
-                            Categoria: <strong>{categoryLabels[room?.category ?? "geography"]}</strong>
+                            Categoria:{" "}
+                            <strong>
+                                {categoryLabels[room?.category ?? "geography"]}
+                            </strong>
                         </p>
+
                         <p>
-                            Modo: <strong>{room ? modeLabels[room.mode] : "-"}</strong>
+                            Modo: <strong>{room?.difficulty ?? "-"}</strong>
                         </p>
+
                         <p>
-                            Visibilidade: <strong>{room?.isPublic ? "Pública" : "Privada"}</strong>
+                            Visibilidade:{" "}
+                            <strong>{room?.isPublic ? "Pública" : "Privada"}</strong>
                         </p>
+
                         <p>
                             Questões: <strong>{room?.questionsAmount ?? "-"}</strong>
                         </p>
+
                         <p>
                             Tempo: <strong>{room?.questionTime ?? "-"}s</strong>
                         </p>
@@ -159,7 +94,8 @@ export default function RoomPage() {
                         {(room?.players ?? []).map((player) => (
                             <li
                                 key={player.playerId}
-                                className={`flex items-center gap-3 rounded-xl border border-(--border-color) p-3 ${playerId === player.playerId ? "bg-blue-50" : ""}`}
+                                className={`flex items-center gap-4 rounded-xl border border-(--border-color) p-3 ${player.playerId === playerId ? "bg-blue-50" : ""
+                                    }`}
                             >
                                 <img
                                     src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${player.avatarSeed}`}
@@ -168,43 +104,44 @@ export default function RoomPage() {
                                 />
 
                                 <div className="flex-1">
-                                    <p className="font-semibold">{player.nickname}</p>
+                                    <p className="font-semibold">
+                                        {player.nickname}
+                                    </p>
 
-                                    {room?.hostId === player.playerId ? (
-                                        <span className="text-xs text-blue-500">Host</span>
-                                    ) : null}
+                                    {room?.hostId === player.playerId && (
+                                        <span className="text-xs text-blue-500">
+                                            Host
+                                        </span>
+                                    )}
                                 </div>
 
-                                <span className={player.online ? "text-green-500" : "text-red-500"}>
+                                <span
+                                    className={
+                                        player.online
+                                            ? "text-green-500"
+                                            : "text-red-500"
+                                    }
+                                >
                                     ●
                                 </span>
                             </li>
                         ))}
                     </ul>
                 </section>
-                <section>
-                    {
-                        room?.hostId === playerId ?
+
+                <section className="mt-6 flex justify-center">
+                    {room?.hostId === playerId ? (
                         <button
-                            type="button"
-                            className="bg-blue-700 text-white"
-                            onClick={() => {
-                                const session = getSession();
-
-                                if (!session || !roomCode) {
-                                    return;
-                                }
-
-                                startGame({
-                                    roomCode,
-                                    playerId: session.playerId,
-                                });
-                            }}
+                            onClick={handleStart}
+                            className="rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white transition hover:bg-blue-700"
                         >
-                            Start
-                        </button>:
-                        <p>Esperando o host iniciar</p>
-                    }
+                            Iniciar partida
+                        </button>
+                    ) : (
+                        <p className="text-(--text-secondary)">
+                            Aguardando o host iniciar a partida...
+                        </p>
+                    )}
                 </section>
             </div>
         </main>

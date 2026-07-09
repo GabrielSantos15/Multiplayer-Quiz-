@@ -1,24 +1,17 @@
+"use client";
+
 import { Player } from "@/interfaces/Player";
-import { getSession } from "@/lib/storage/player-session";
-import { useEffect, useState } from "react";
+import { usePlayer } from "@/hooks/usePlayer";
 
 
 interface PlayersListProps {
   players: Player[];
 }
 export default function PlayersList({ players }:PlayersListProps) {
-  // const [session, setSession] = useState<Player>();
-
-  const session = getSession()
-  // useEffect(() => {
-  //   const saved = getSession();
-  //   if (saved) {
-  //     setSession(saved);
-  //   }
-  // }, []);
+  const { session } = usePlayer();
 
   return (
-    <section className="max-w-3xl bg-[var(--bg-surface)] p-5 rounded-2xl">
+    <section className="max-w-3xl bg-(--bg-surface) p-5 rounded-2xl">
       <h2 className="font-semibold text-2xl mb-4">Players online</h2>
       <ul>
         {players.map((p) => {
@@ -26,7 +19,7 @@ export default function PlayersList({ players }:PlayersListProps) {
           return (
             <li
               key={p.playerId}
-              className={`flex items-center gap-2 p-2 border-b border-[var(--border-color)] ${
+                className={`flex items-center gap-2 p-2 border-b border-(--border-color) ${
                 isCurrentUser ? "bg-blue-100 font-bold rounded-lg" : ""
               }`}
             >

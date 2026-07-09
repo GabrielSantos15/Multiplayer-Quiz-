@@ -1,20 +1,16 @@
 import type { Question } from "./question-types.js";
 
-export interface Answer {
-  playerId: string;
+export interface PlayerAnswer {
   answer: string | number;
-  isCorrect: boolean;
   answeredAt: number;
 }
 
 export interface Game {
   roomCode: string;
-
   currentQuestion: number;
-
-  question?: Question;
-
-  answers: Answer[];
-
-  startedAt: number;
+  questions: Question[];
+  currentTimeout: NodeJS.Timeout | null;
+  currentAnswers: Map<string, PlayerAnswer>;
+  questionStartedAt: number ;
+    resultTimeout: NodeJS.Timeout | null;
 }

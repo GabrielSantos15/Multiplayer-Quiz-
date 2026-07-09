@@ -1,7 +1,8 @@
 import { Player } from "./Player";
 
 export type QuizCategory = "geography";
-export type GeographyMode = "flags" | "capitals" | "continents";
+export type QuizDifficulty = "easy" | "medium" | "hard";
+
 export enum RoomStatus {
   WAITING = "waiting",
   PLAYING = "playing",
@@ -13,7 +14,8 @@ export interface Room {
   hostId: string;
 
   category: QuizCategory;
-  mode: GeographyMode;
+  difficulty: QuizDifficulty;
+
   isPublic: boolean;
 
   questionsAmount: number;

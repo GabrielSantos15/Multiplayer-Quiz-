@@ -8,13 +8,13 @@
   --primary-hover: #059669;
   --secondary-color: #0886a5;
 
-  --bg-primary: #f7f7f7;
-  --bg-secondary: #e9edf0;
-  --bg-surface: #FFFFFF;
+  --bg-primary: #000000;
+  --bg-secondary: #666666;
+  --bg-surface: #707070;
 
-  --text-primary: #0F172A;
+  --text-primary: #ffffff;
   --text-secondary: #37465a;
-  --text-muted: #6d7885;
+  --text-muted: #fcfdff;
 
   --bg-input: #FAFAFA;
   --border-input: #E2E8F0;

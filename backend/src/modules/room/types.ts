@@ -9,16 +9,16 @@ export enum QuizCategory {
   // MATH = "math" // v2
 }
 
-export enum GeographyMode {
-  FLAGS = "flags",
-  CAPITALS = "capitals",
-  CONTINENTS = "continents",
+export enum QuizDifficulty {
+  EASY = "easy",
+  MEDIUM = "medium",
+  HARD = "hard",
 }
 
 export type CreateRoomPayload = {
   hostId: string;
   category: QuizCategory;
-  mode: GeographyMode;
+  difficulty: QuizDifficulty;
   isPublic: boolean;
   questionsAmount: number;
   questionTime: number;
@@ -27,11 +27,16 @@ export type CreateRoomPayload = {
 export interface Room {
   code: string;
   hostId: string;
+
   category: QuizCategory;
-  mode: GeographyMode;
+  difficulty: QuizDifficulty;
+
   isPublic: boolean;
+
   questionsAmount: number;
   questionTime: number;
+
   status: RoomStatus;
+
   players: string[];
 }

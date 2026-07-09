@@ -3,13 +3,15 @@ import { rooms } from "../room/repository.js";
 import { players } from "../player/repository.js";
 import { games } from "./repository.js";
 import type { Game } from "./types.js";
-import { RoomStatus } from "../room/types.js";
-import { emitRoomUpdate } from "../room/handler.js";
+import { RoomStatus, type Room } from "../room/types.js";
+import { countOnlinePlayers, emitRoomUpdate } from "../room/handler.js";
+import { generateQuiz, sanitizeQuestion } from "./question-generator.js";
+import type { Player } from "../player/types.js";
 
 export function registerGameHandlers(io: Server, socket: Socket) {
   socket.on("game:start", (data?: { roomCode?: string; playerId?: string }) => {
     const socketPlayer = Array.from(players.values()).find(
-      (player) => player.socketId === socket.id
+      (player) => player.socketId === socket.id,
     );
 
     const roomCode = data?.roomCode ?? socketPlayer?.roomCode;
@@ -19,16 +21,13 @@ export function registerGameHandlers(io: Server, socket: Socket) {
       socket.emit("room:error", {
         message: "Dados insuficientes para iniciar a partida.",
       });
-
       return;
     }
 
     const room = rooms.get(roomCode);
 
     if (!room) {
-      socket.emit("room:error", {
-        message: "Sala não encontrada.",
-      });
+      socket.emit("room:error", { message: "Sala não encontrada." });
       return;
     }
 
@@ -40,51 +39,169 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     }
 
     if (room.status !== RoomStatus.WAITING) {
-      socket.emit("room:error", {
-        message: "A partida já foi iniciada.",
-      });
+      socket.emit("room:error", { message: "A partida já foi iniciada." });
       return;
     }
 
-    // Inicializa dados dos jogadores
     room.players.forEach((playerId) => {
       const player = players.get(playerId);
-
       if (player) {
-        players.set(playerId, {
-          ...player,
-          score: 0,
-          correctAnswers: 0,
-        });
+        players.set(playerId, { ...player, score: 0, correctAnswers: 0 });
       }
     });
 
-    // Atualiza status da sala
     room.status = RoomStatus.PLAYING;
-
     rooms.set(room.code, room);
 
-    // Cria o jogo
+    const questions = generateQuiz(room.questionsAmount, room.difficulty);
+
     const game: Game = {
       roomCode: room.code,
-
       currentQuestion: 0,
-
-      answers: [],
-
-      startedAt: Date.now(),
+      questions,
+      currentTimeout: null,
+      resultTimeout: null,
+      currentAnswers: new Map(),
+      questionStartedAt: 0,
     };
 
     games.set(room.code, game);
 
     console.log(`🎮 Jogo iniciado na sala ${room.code}`);
 
-    // manda todos para o jogo
-    io.to(room.code).emit("game:started", {
-      roomCode: room.code,
-    });
-
-    // atualiza sala caso alguém ainda esteja ouvindo
+    io.to(room.code).emit("game:started", { roomCode: room.code });
     emitRoomUpdate(io, room);
+
+    sendQuestion(io, room, game);
   });
+
+  socket.on(
+    "game:answer",
+    (data: {
+      roomCode: string;
+      playerId: string;
+      answer: string;
+      questionIndex: number;
+    }) => {
+      const { roomCode, playerId, answer, questionIndex } = data;
+
+      const room = rooms.get(roomCode);
+      const game = games.get(roomCode);
+
+      if (!room || !game) {
+        socket.emit("room:error", { message: "Sala ou jogo não encontrado." });
+        return;
+      }
+
+
+      if (questionIndex !== game.currentQuestion) return;
+      if (game.currentAnswers.has(playerId)) return;
+      if (!game.questions[game.currentQuestion].options.includes(answer)) return;
+
+      game.currentAnswers.set(playerId, {
+        answer,
+        answeredAt: Date.now(),
+      });
+
+      const totalPlayers = countOnlinePlayers(room);
+      const totalAnswers = game.currentAnswers.size;
+
+      if (totalAnswers >= totalPlayers) {
+        if (game.currentTimeout) {
+          clearTimeout(game.currentTimeout);
+          game.currentTimeout = null;
+        }
+        advanceQuestion(io, room, game);
+      }
+    },
+  );
+}
+
+function sendQuestion(io: Server, room: Room, game: Game) {
+    console.log("Enviando pergunta", game.currentQuestion);
+  const question = game.questions[game.currentQuestion];
+  const publicQuestion = sanitizeQuestion(question);
+
+  game.currentAnswers = new Map();
+
+    game.questionStartedAt = Date.now();
+
+  io.to(room.code).emit("game:question", {
+    question: publicQuestion,
+    questionIndex: game.currentQuestion,
+    totalQuestions: game.questions.length,
+    timeLimit: room.questionTime,
+  });
+
+  game.currentTimeout = setTimeout(() => {
+    advanceQuestion(io, room, game);
+  }, room.questionTime * 1000);
+}
+
+function advanceQuestion(io: Server, room: Room, game: Game) {
+  const question = game.questions[game.currentQuestion];
+
+  // Atualiza a pontuação de quem respondeu
+  for (const [playerId, playerAnswer] of game.currentAnswers.entries()) {
+    const player = players.get(playerId);
+
+    if (!player) continue;
+
+    const isCorrect = playerAnswer.answer === question.answer;
+
+    if (!isCorrect) continue;
+
+    const elapsed = playerAnswer.answeredAt - game.questionStartedAt;
+
+    let points = 100;
+
+    if (elapsed <= 3000) {
+      points += 50;
+    } else if (elapsed <= 6000) {
+      points += 30;
+    } else {
+      points += 10;
+    }
+
+    players.set(playerId, {
+      ...player,
+      score: player.score + points,
+      correctAnswers: player.correctAnswers + 1,
+    });
+  }
+
+  // Ranking atualizado
+  const ranking = room.players
+    .map((playerId) => players.get(playerId))
+    .filter((player): player is Player => player !== undefined)
+    .sort((a, b) => b.score - a.score);
+
+  // Envia o resultado da pergunta
+  io.to(room.code).emit("game:question-result", {
+    correctAnswer: question.answer,
+    ranking,
+  });
+
+  // Espera alguns segundos antes da próxima pergunta
+  game.resultTimeout = setTimeout(() => {
+    game.currentQuestion++;
+
+    if (game.currentQuestion >= game.questions.length) {
+      room.status = RoomStatus.FINISHED;
+
+      rooms.set(room.code, room);
+
+      io.to(room.code).emit("game:ended", {
+        ranking,
+      });
+
+      games.delete(room.code);
+
+      emitRoomUpdate(io, room);
+
+      return;
+    }
+
+    sendQuestion(io, room, game);
+  }, 5000);
 }

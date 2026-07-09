@@ -13,6 +13,7 @@ export function registerPlayerHandlers(io: Server, socket: Socket) {
       ...data,
       socketId: socket.id,
       online: true,
+      score: 0
     };
 
     players.set(player.playerId, player);

@@ -5,6 +5,6 @@ export interface Player {
   avatarSeed: string;
   online: boolean;
   roomCode?: string;
-  score?: number;
-  correctAnswers?: number;
+  score: number;
+  correctAnswers: number;
 }

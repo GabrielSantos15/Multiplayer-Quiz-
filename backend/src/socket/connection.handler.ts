@@ -3,7 +3,7 @@ import type { Server, Socket } from "socket.io";
 import { players } from "../modules/player/repository.js";
 import type { Player } from "../modules/player/types.js";
 import { rooms } from "../modules/room/repository.js";
-import { emitRoomUpdate } from "../modules/room/handler.js";
+import { destroyRoom, emitRoomUpdate } from "../modules/room/handler.js";
 
 export function registerConnectionHandlers(io: Server, socket: Socket) {
   socket.on("disconnect", () => {
@@ -22,9 +22,7 @@ export function registerConnectionHandlers(io: Server, socket: Socket) {
 
       players.set(id, updatedPlayer);
 
-      const room = player.roomCode
-        ? rooms.get(player.roomCode)
-        : null;
+      const room = player.roomCode ? rooms.get(player.roomCode) : null;
 
       if (room) {
         const hasOnlinePlayers = room.players.some((playerId) => {
@@ -33,34 +31,25 @@ export function registerConnectionHandlers(io: Server, socket: Socket) {
           return currentPlayer?.online;
         });
 
-
         // ninguém mais está conectado
         if (!hasOnlinePlayers) {
-          rooms.delete(room.code);
+          destroyRoom(room.code);
 
-          console.log(
-            `🗑️ Sala ${room.code} encerrada (todos offline)`
-          );
+          console.log(`🗑️ Sala ${room.code} encerrada (todos offline)`);
 
           break;
         }
-
 
         // troca host se necessário
         if (room.hostId === player.playerId) {
           const newHost = room.players
             .map((playerId) => players.get(playerId))
-            .find(
-              (currentPlayer) =>
-                currentPlayer?.online
-            );
+            .find((currentPlayer) => currentPlayer?.online);
 
           if (newHost) {
             room.hostId = newHost.playerId;
 
-            console.log(
-              `👑 Novo host: ${newHost.nickname}`
-            );
+            console.log(`👑 Novo host: ${newHost.nickname}`);
           }
         }
 
