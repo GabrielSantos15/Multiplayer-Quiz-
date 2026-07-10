@@ -5,6 +5,7 @@ import {
   generateCapitalQuestion,
   generateContinentQuestion,
   generateFlagQuestion,
+  generateMapQuestion,
   generatePopulationQuestion,
 } from "./questions.js";
 
@@ -17,8 +18,8 @@ export function generateQuestion(difficulty: Difficulty): Question {
     case "easy":
       generators = [
         generateFlagQuestion,
-        generateCapitalQuestion,
         generateContinentQuestion,
+        generateMapQuestion,
       ];
       break;
 
@@ -27,6 +28,7 @@ export function generateQuestion(difficulty: Difficulty): Question {
         generateFlagQuestion,
         generateCapitalQuestion,
         generateContinentQuestion,
+        generateMapQuestion,
         generateBorderQuestion,
       ];
       break;
@@ -35,10 +37,10 @@ export function generateQuestion(difficulty: Difficulty): Question {
       generators = [
         generateFlagQuestion,
         generateCapitalQuestion,
-        generateContinentQuestion,
+        generateMapQuestion,
+        generateBorderQuestion,
         generatePopulationQuestion,
         generateAreaQuestion,
-        generateBorderQuestion,
       ];
       break;
   }
@@ -65,7 +67,8 @@ export function generateQuiz(
     }
   }
 
-  if (questions.length < amount) throw new Error("Não foi possível gerar perguntas suficientes.");
+  if (questions.length < amount)
+    throw new Error("Não foi possível gerar perguntas suficientes.");
 
   return questions;
 }

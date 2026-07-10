@@ -5,6 +5,7 @@ export type PublicQuestion = {
     type: string;
     question: string;
     image?: string;
+    highlightedCountry?: string
     options: string[];
 };
 

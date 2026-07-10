@@ -14,3 +14,22 @@ export interface Game {
   questionStartedAt: number ;
     resultTimeout: NodeJS.Timeout | null;
 }
+
+export interface Country {
+  name: string;
+  capital: string;
+  region: string;
+  subregion: string;
+  population: number;
+  area: number;
+  borders: string[];
+  alpha3Code: string;
+  alpha2Code: string;
+  flags: {
+    png: string;
+    svg: string;
+  };
+  translations: {
+    pt: string;
+  };
+}

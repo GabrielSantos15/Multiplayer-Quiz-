@@ -15,15 +15,9 @@ import { usePlayer } from "@/hooks/usePlayer";
 import { getRoomSession } from "@/lib/storage/room-session";
 
 import type { Room } from "@/interfaces/Room";
-import type { QuestionResult } from "@/interfaces/Game";
+import type { PublicQuestion, QuestionResult } from "@/interfaces/Game";
 
-export type PublicQuestion = {
-  id: string;
-  type: string;
-  question: string;
-  image?: string;
-  options: string[];
-};
+
 
 type GameContextData = {
   room: Room | null;

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import QuestionResultPage from "@/components/game/QuestionResultPage";
 import { useGame } from "@/providers/GameProvider";
+import WorldMapQuestion from "@/components/game/WorldMapQuestion";
 
 export default function GamePage() {
     const {
@@ -70,7 +71,7 @@ export default function GamePage() {
                                     className="w-full rounded-lg"
                                 />
                             )}
-
+                            {currentQuestion.highlightedCountry &&         <WorldMapQuestion highlightedCountry={currentQuestion.highlightedCountry}></WorldMapQuestion>}
                             <div className="grid gap-3">
                                 {currentQuestion.options.map((option) => (
                                     <label
@@ -78,7 +79,7 @@ export default function GamePage() {
                                         className={`cursor-pointer rounded-lg border p-3 text-center transition
                       ${selectedOption === option
                                                 ? "border-blue-600 bg-blue-600 text-white"
-                                                : "border-gray-300 bg-gray-700 hover:bg-gray-600"
+                                                : "border-gray-300 bg-[var(--bg-surface)] hover:bg-gray-200"
                                             }`}
                                     >
                                         <input
@@ -99,8 +100,8 @@ export default function GamePage() {
                                 disabled={!selectedOption || answered}
                                 onClick={() => answer(selectedOption)}
                                 className={`w-full rounded-lg py-2 font-semibold transition ${!selectedOption || answered
-                                        ? "cursor-not-allowed bg-gray-400"
-                                        : "bg-green-600 text-white hover:bg-green-700"
+                                    ? "cursor-not-allowed bg-gray-400"
+                                    : "bg-green-600 text-white hover:bg-green-700"
                                     }`}
                             >
                                 {answered ? "Resposta enviada" : "Confirmar resposta"}
