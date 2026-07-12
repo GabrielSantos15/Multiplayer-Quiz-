@@ -32,7 +32,7 @@ export default function RoomPage() {
     }
 
     return (
-        <main className="min-h-screen bg-(--bg-primary) px-6 py-10">
+        <main className="min-h-screen  px-6 py-10">
             <div className="mx-auto max-w-5xl">
                 <header className="mb-6 flex items-center justify-between">
                     <div>

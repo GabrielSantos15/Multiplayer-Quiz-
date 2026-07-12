@@ -205,3 +205,27 @@ function advanceQuestion(io: Server, room: Room, game: Game) {
     sendQuestion(io, room, game);
   }, 5000);
 }
+
+export function syncPlayerWithCurrentQuestion(
+  socket: Socket,
+  room: Room,
+  game: Game,
+) {
+  const question = game.questions[game.currentQuestion];
+
+  const publicQuestion = sanitizeQuestion(question);
+
+  const elapsed = Date.now() - game.questionStartedAt;
+
+  const remaining = Math.max(
+    1,
+    Math.ceil(room.questionTime - elapsed / 1000),
+  );
+
+  socket.emit("game:question", {
+    question: publicQuestion,
+    questionIndex: game.currentQuestion,
+    totalQuestions: game.questions.length,
+    timeLimit: remaining,
+  });
+}

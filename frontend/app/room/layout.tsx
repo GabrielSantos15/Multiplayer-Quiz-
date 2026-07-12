@@ -5,5 +5,7 @@ export default function RoomLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <GameProvider>{children}</GameProvider>;
+    return <GameProvider>
+        {children}
+    </GameProvider>;
 }

@@ -12,10 +12,12 @@ import {
 
 import socket from "@/lib/socket";
 import { usePlayer } from "@/hooks/usePlayer";
-import { getRoomSession } from "@/lib/storage/room-session";
+import { getRoomSession, clearRoomSession } from "@/lib/storage/room-session";
+import { useRouter } from "next/navigation";
 
 import type { Room } from "@/interfaces/Room";
 import type { PublicQuestion, QuestionResult } from "@/interfaces/Game";
+import type { Player } from "@/interfaces/Player";
 
 
 
@@ -27,6 +29,7 @@ type GameContextData = {
   totalQuestions: number | null;
 
   result: QuestionResult | null;
+  ranking: Player[];
 
   answered: boolean;
   selectedAnswer: string | null;
@@ -44,6 +47,7 @@ export function GameProvider({
   children: React.ReactNode;
 }) {
   const { session, ready } = usePlayer();
+  const router = useRouter();
 
   const roomSession = useMemo(
     () => getRoomSession(),
@@ -75,6 +79,8 @@ export function GameProvider({
   // Result
   const [result, setResult] =
     useState<QuestionResult | null>(null);
+
+  const [ranking, setRanking] = useState<Player[]>([]);
 
   // Timer
   const [timeLeft, setTimeLeft] =
@@ -110,6 +116,7 @@ export function GameProvider({
 
     function onRoomUpdate(room: Room) {
       setRoom(room);
+      setRanking(room.players);
     }
 
     function onQuestion(payload: {
@@ -156,6 +163,7 @@ export function GameProvider({
     function onResult(result: QuestionResult) {
       setCurrentQuestion(null);
       setResult(result);
+      setRanking(result.ranking);
     }
 
     function onRestart() {
@@ -166,9 +174,17 @@ export function GameProvider({
       setCurrentQuestion(null);
     }
 
+    function onRoomError(data: { message: string }) {
+      if (data.message === "Sala não encontrada.") {
+        clearRoomSession();
+        router.replace("/");
+      }
+    }
+
     socket.on("room:update", onRoomUpdate);
     socket.on("room:joined", onRoomUpdate);
     socket.on("room:restart", onRestart);
+    socket.on("room:error", onRoomError);
 
     socket.on("game:question", onQuestion);
     socket.on("game:question-result", onResult);
@@ -229,6 +245,7 @@ export function GameProvider({
         totalQuestions,
 
         result,
+        ranking,
 
         answered,
         selectedAnswer,

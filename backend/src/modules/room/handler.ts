@@ -4,6 +4,7 @@ import { players } from "../player/repository.js";
 import { generateRoomCode } from "../../utils/generate-room-code.js";
 import { rooms } from "./repository.js";
 import { games } from "../game/repository.js";
+import { syncPlayerWithCurrentQuestion } from "../game/handler.js";
 
 export function emitRoomUpdate(io: Server, room: Room) {
   io.to(room.code).emit("room:update", {
@@ -139,6 +140,12 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
     emitRoomUpdate(io, room);
 
     socket.emit("room:joined", room);
+
+   const game = games.get(room.code);
+
+  if (room.status === RoomStatus.PLAYING && game) {
+    syncPlayerWithCurrentQuestion(socket, room, game);
+  }
   });
 
   socket.on("room:restart", (data) => {

@@ -113,11 +113,11 @@ export default function JoinRoom() {
 	}
 
 	return (
-		<main className="min-h-screen flex items-center justify-center bg-(--bg-primary) px-6">
-			<section className="w-full max-w-xl rounded-2xl bg-(--bg-surface) border border-(--border-color) p-8 shadow-lg">
+		<main className="min-h-screen flex items-center justify-center px-6">
+			<section className="w-full max-w-xl rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] p-8 shadow-lg">
 				<header className="mb-8">
 					<h1 className="text-3xl font-bold">Entrar na Sala</h1>
-					<p className="mt-2 text-(--text-secondary)">
+					<p className="mt-2 text-[var(--text-secondary)]">
 						Entre em uma sala publica ou informe o codigo de uma sala privada.
 					</p>
 				</header>
@@ -125,7 +125,7 @@ export default function JoinRoom() {
 				<section className="mb-8">
 					<div className="mb-3 flex items-center justify-between gap-3">
 						<h2 className="text-lg font-semibold">Salas publicas</h2>
-						<span className="text-sm text-(--text-secondary)">
+						<span className="text-sm text-[var(--text-secondary)]">
 							{loadingRooms ? "Carregando..." : `${publicRooms.length} disponivel(is)`}
 						</span>
 					</div>
@@ -137,7 +137,7 @@ export default function JoinRoom() {
 									key={room.code}
 									type="button"
 									onClick={() => handleJoinPublicRoom(room)}
-									className="rounded-xl border border-(--border-color) bg-(--background) p-4 text-left transition hover:border-blue-500 hover:bg-blue-500/5"
+									className="rounded-xl border border-[var(--border-color)] bg-[var(--background)] p-4 text-left transition hover:border-blue-500 hover:bg-blue-500/5"
 								>
 									<div className="flex items-start justify-between gap-4">
 										<div>
@@ -152,7 +152,7 @@ export default function JoinRoom() {
 										</span>
 									</div>
 
-									<div className="mt-3 flex items-center gap-4 text-sm text-(--text-secondary)">
+									<div className="mt-3 flex items-center gap-4 text-sm text-[var(--text-secondary)]">
 										<span>{room.playersCount} jogador(es)</span>
 										<span>{room.questionsAmount} questoes</span>
 										<span>{room.questionTime}s por questao</span>

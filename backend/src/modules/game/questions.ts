@@ -97,14 +97,8 @@ const countriesByAlpha3 = new Map(
   countries.map((country) => [country.alpha3Code, country]),
 );
 
-const countriesByAlpha2 = new Map(countries.map((c) => [c.alpha2Code, c]));
-
 function getCountryByAlpha3(code: string) {
   return countriesByAlpha3.get(code);
-}
-
-function getCountryByAlpha2(code: string) {
-  return countriesByAlpha2.get(code);
 }
 
 // ============================================================================
@@ -126,6 +120,13 @@ const countriesWithMap = countries.filter(
     country.area >= MIN_AREA_FOR_MAP_QUESTION,
 );
 
+const countriesWithValidRegion = countries.filter(
+  (
+    country,
+  ): country is Country & {
+    region: keyof typeof CONTINENT_NAMES;
+  } => country.region in CONTINENT_NAMES,
+);
 // ============================================================================
 // QUESTION GENERATORS
 // ============================================================================
@@ -185,10 +186,10 @@ export function generateCapitalQuestion(): Question {
  * Pergunta: "Em qual continente fica [País]?"
  */
 export function generateContinentQuestion(): Question {
-  const correct = chooseRandomCountry();
+  const correct = randomItem(countriesWithValidRegion);
 
   const options = shuffle([
-    CONTINENT_NAMES[correct.region as keyof typeof CONTINENT_NAMES],
+    CONTINENT_NAMES[correct.region],
     ...shuffle(CONTINENTS.filter((continent) => continent !== correct.region))
       .slice(0, 3)
       .map((continent) => CONTINENT_NAMES[continent]),
@@ -199,7 +200,7 @@ export function generateContinentQuestion(): Question {
     type: "continent",
     question: `Em qual continente fica ${getCountryName(correct)}?`,
     options,
-    answer: CONTINENT_NAMES[correct.region as keyof typeof CONTINENT_NAMES],
+    answer: CONTINENT_NAMES[correct.region],
   };
 }
 

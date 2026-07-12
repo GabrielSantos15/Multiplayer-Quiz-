@@ -1,115 +1,77 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import QuestionResultPage from "@/components/game/QuestionResultPage";
 import { useGame } from "@/providers/GameProvider";
-import WorldMapQuestion from "@/components/game/WorldMapQuestion";
+
+import Quiz from "@/components/game/Quiz";
+import Timer from "@/components/game/Timer";
+import Ranking from "@/components/game/Ranking";
+import QuestionResultPage from "@/components/game/QuestionResultPage";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function GamePage() {
     const {
         room,
+        result,
         currentQuestion,
         questionIndex,
         totalQuestions,
         timeLeft,
-        answered,
-        result,
-        answer,
+        ranking,
     } = useGame();
-
-    const [selectedOption, setSelectedOption] = useState("");
+    const router = useRouter()
 
     useEffect(() => {
-        setSelectedOption("");
-    }, [currentQuestion]);
+        if (!room) {
+            router.replace("/join");
+        }
+    }, [room, router]);
 
     if (!room) {
-        return (
-            <main className="flex min-h-screen items-center justify-center">
-                <p>Carregando sala...</p>
-            </main>
-        );
+        return null;
     }
+return (
+        <div className="grid min-h-screen w-full grid-cols-1 gap-6 p-6 md:grid-cols-[1fr_2fr_1fr]">
+            
+            <div className="bg-[var(--bg-primary)] h-2 w-full fixed top-0 left-0 z-50">
+                {questionIndex != null && totalQuestions != null && (
+                    <div
+                        className="bg-[var(--color-primary)] h-full transition-all duration-500 ease-in-out"
+                        style={{ width: `${((questionIndex + 1) / totalQuestions) * 100}%` }}
+                    ></div>
+                )}
+            </div>
 
-    return (
-        <main className="mx-auto max-w-2xl p-6">
-            {result ? (
-                <QuestionResultPage result={result} />
-            ) : (
-                <section className="space-y-4">
-                    <header>
-                        <h2 className="text-xl font-bold">Sala {room.code}</h2>
-                        <p>Jogadores: {room.players.length}</p>
-                        <p>Status: {room.status}</p>
-                    </header>
-
-                    {!currentQuestion ? (
-                        <p className="text-center text-gray-500">
-                            Aguardando próxima pergunta...
+            <aside className="order-last hidden flex-col gap-6 self-start pt-4 md:order-first md:flex">
+                <div>
+                    <h1 className="text-2xl font-bold drop-shadow-sm">
+                        Sala {room.code}
+                    </h1>
+                    {currentQuestion && (
+                        <p className="text-sm font-medium text-[var(--text-secondary)]">
+                            Pergunta {(questionIndex ?? 0) + 1} de {totalQuestions}
                         </p>
-                    ) : (
-                        <article className="space-y-4 rounded-lg bg-[var(--bg-surface)] p-6 shadow">
-                            <div className="flex items-center justify-between">
-                                <strong>
-                                    Pergunta {questionIndex! + 1} / {totalQuestions}
-                                </strong>
-
-                                <span className="font-semibold text-red-500">
-                                    ⏳ {timeLeft}s
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg font-semibold">
-                                {currentQuestion.question}
-                            </h3>
-
-                            {currentQuestion.image && (
-                                <img
-                                    src={currentQuestion.image}
-                                    alt={currentQuestion.question}
-                                    className="w-full rounded-lg"
-                                />
-                            )}
-                            {currentQuestion.highlightedCountry &&         <WorldMapQuestion highlightedCountry={currentQuestion.highlightedCountry}></WorldMapQuestion>}
-                            <div className="grid gap-3">
-                                {currentQuestion.options.map((option) => (
-                                    <label
-                                        key={option}
-                                        className={`cursor-pointer rounded-lg border p-3 text-center transition
-                      ${selectedOption === option
-                                                ? "border-blue-600 bg-blue-600 text-white"
-                                                : "border-gray-300 bg-[var(--bg-surface)] hover:bg-gray-200"
-                                            }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            className="hidden"
-                                            checked={selectedOption === option}
-                                            disabled={answered}
-                                            onChange={() => setSelectedOption(option)}
-                                        />
-
-                                        {option}
-                                    </label>
-                                ))}
-                            </div>
-
-                            <button
-                                type="button"
-                                disabled={!selectedOption || answered}
-                                onClick={() => answer(selectedOption)}
-                                className={`w-full rounded-lg py-2 font-semibold transition ${!selectedOption || answered
-                                    ? "cursor-not-allowed bg-gray-400"
-                                    : "bg-green-600 text-white hover:bg-green-700"
-                                    }`}
-                            >
-                                {answered ? "Resposta enviada" : "Confirmar resposta"}
-                            </button>
-                        </article>
                     )}
-                </section>
-            )}
-        </main>
+                </div>
+                <Ranking ranking={ranking} />
+            </aside>
+
+            <main className="order-2 flex w-full max-w-3xl flex-col self-start justify-self-center">
+                {result ? (
+                    <QuestionResultPage result={result} />
+                ) : (
+                    <Quiz />
+                )}
+            </main>
+
+            <div className="order-first flex flex-col items-end gap-4 self-start pt-4 md:order-last">
+                {currentQuestion && (
+                    <Timer
+                        timeLeft={timeLeft}
+                        timeLimit={room.questionTime}
+                    />
+                )}
+            </div>
+        </div>
     );
 }

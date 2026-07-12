@@ -4,9 +4,9 @@
   /* =========================================
      TEMA CLARO (Light Mode)
      ========================================= */
-  --primary-color: #10B981;
-  --primary-hover: #059669;
-  --secondary-color: #0886a5;
+  --color-primary: #2563EB;
+  --hover-primary: #1D4ED8;
+  --color-secondary: #60A5FA;
 
   --bg-primary: #e2e2e2;
   --bg-secondary: #eeeeee;
@@ -46,4 +46,10 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  background-image: linear-gradient(#d8e1e280,#bac5c585), url('/images/mapa-mundi-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
