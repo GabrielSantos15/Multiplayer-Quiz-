@@ -30,10 +30,10 @@ export default function GameEndedPage({
   return (
     <section className="flex justify-evenly items-center flex-col md:flex-row flex-wrap-reverse relative">
       {/* layer */}
-      <div className="fixed inset-0 z-[-1] bg-black/20 backdrop-blur-sm pointer-events-none" />
+      {/* <div className="fixed inset-0 z-[-1] bg-black/20 backdrop-blur-sm pointer-events-none" /> */}
       {
         player && room &&
-        <article className="flex flex-col gap-6 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-8 h-fit ">
+        <article className="flex flex-col gap-6 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-surface)] shadow p-8 h-fit ">
           <div className="flex flex-col items-center">
             <UserImage seed={player?.avatarSeed}></UserImage>
             <h2 className="text-2xl font-semibold center">{player.nickname}</h2>
@@ -55,7 +55,7 @@ export default function GameEndedPage({
               <div className="flex items-center justify-center gap-2">
                 <CheckCircle size={28} />
                 <h3 className="text-3xl font-bold text-center">
-                  {(player?.correctAnswers)?? 0}
+                  {(player?.correctAnswers) ?? 0}
                 </h3>
               </div>
               <p className="text-sm">Acertos</p>
@@ -73,11 +73,15 @@ export default function GameEndedPage({
 
           </div>
 
-          <div className="flex flex-row gap-4">
-            <button onClick={onPlayAgain} className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-6 py-3 font-semibold text-white hover:brightness-110 transition cursor-pointer">
-              <Users size={18} />
-              Voltar ao Lobby
-            </button>
+          <div className="flex flex-row items-center gap-4">
+            {
+              room.hostId == playerId ?
+              <button onClick={onPlayAgain} className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-6 py-3 font-semibold text-white hover:brightness-110 transition cursor-pointer">
+                <Users size={18} />
+                Voltar ao Lobby
+              </button>:
+              <p>Espere o host reiniciar</p>
+            }
             <button onClick={onBack} className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] px-6 py-3 font-semibold hover:bg-[var(--bg-primary)] transition cursor-pointer">
               <LogOut size={18} />
               Sair da Sala
@@ -86,10 +90,8 @@ export default function GameEndedPage({
         </article>
       }
       <div className="relative flex flex-col items-center">
-        {/* Pódio centralizado */}
         <Podium ranking={ranking} className="w-[90%]" />
 
-        {/* Ranking abaixo com z-index para sobrepor se necessário */}
         <Ranking ranking={ranking} className="z-10 w-full max-w-2xl" />
       </div>
 

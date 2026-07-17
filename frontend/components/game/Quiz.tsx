@@ -31,7 +31,7 @@ export default function Quiz() {
     }
 
     return (
-        <article className="mx-auto w-full m-auto max-w-2xl rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-6 shadow-lg">
+        <article className="mx-auto w-full mx-auto  rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-6 shadow-lg">
             <h3 className="mb-6 flex gap-3 text-xl font-semibold">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-bold text-white">
                     {(questionIndex ?? 0) + 1}

@@ -50,6 +50,7 @@ body {
   background-image: url('/images/simple.png');
   background-size: cover;
   background-position: center;
+  background-attachment: fixed;
   background-repeat: no-repeat;
 
 }

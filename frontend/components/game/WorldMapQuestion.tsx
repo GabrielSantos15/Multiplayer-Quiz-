@@ -73,12 +73,14 @@ export default function WorldMapQuestion({
         </g>
       </svg>
 
-      <button
-        onClick={() => setZoomed((prev) => !prev)}
-        className="ml-auto rounded-lg bg-[var(--color-secondary)] px-4 py-2 text-white transition hover:bg-[var(--color-secondary-hover)] cursor-pointer "
-      >
-        {zoomed ? "Ver mapa completo" : "Dar zoom"}
-      </button>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setZoomed((z) => !z)}
+          className="rounded-lg border bg-[var(--color-secondary)] px-4 py-2 text-sm hover:bg-[var(--color-secondary-hover)] cursor-pointer text-white"
+        >
+          {zoomed ? "Ver mapa completo" : "Focar no país"}
+        </button>
+      </div>
     </div>
   );
 }

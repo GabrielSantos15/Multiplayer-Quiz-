@@ -14,7 +14,7 @@ export default function Ranking({ ranking, className }: RankingProps) {
     const playerId = getOrCreatePlayerId();
 
     return (
-        <div className={`bg-[var(--bg-surface)] w-full p-4 rounded-2xl ${className}`}>
+        <div className={`bg-[var(--bg-surface)] w-full p-4 rounded-2xl shadow ${className}`}>
             <h3 className="text-xl font-semibold mb-4">
                 Ranking
             </h3>
@@ -35,7 +35,7 @@ export default function Ranking({ ranking, className }: RankingProps) {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
 
-                            className={`flex items-center justify-between rounded-lg  p-4 shadow transition-colors ${isMe ? "bg-[var(--color-primary)]/10 border-[var(--color-primary)]" : "bg-[var(--bg-surface)]"
+                            className={`flex items-center justify-between rounded-lg p-4 shadow transition-colors border ${isMe ? "bg-[var(--color-secondary)]/10 border-[var(--color-secondary)]" : "bg-[var(--bg-surface)] border-[var(--border-color)]"
                                 }`}
                         >
                             <div className="flex items-center gap-3 min-w-3xs ">
