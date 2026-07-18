@@ -141,33 +141,53 @@ function advanceQuestion(io: Server, room: Room, game: Game) {
   const question = game.questions[game.currentQuestion];
 
   // Atualiza a pontuação de quem respondeu
+  const totalTimeMs = room.questionTime * 1000;
+  const correctAnswers = [];
+
   for (const [playerId, playerAnswer] of game.currentAnswers.entries()) {
-    const player = players.get(playerId);
-
-    if (!player) continue;
-
     const isCorrect = playerAnswer.answer === question.answer;
+    
+    if (isCorrect) {
+      correctAnswers.push({
+        playerId,
+        elapsed: playerAnswer.answeredAt - game.questionStartedAt
+      });
+    }
+  }
 
-    if (!isCorrect) continue;
+  // Ordenar do mais rápido para o mais lento
+  correctAnswers.sort((a, b) => a.elapsed - b.elapsed);
 
-    const elapsed = playerAnswer.answeredAt - game.questionStartedAt;
+  // Distribuir os pontos
+  correctAnswers.forEach((answerData, index) => {
+    const player = players.get(answerData.playerId);
+    if (!player) return;
 
-    let points = 100;
+    let points = 100; // Pontos base
 
-    if (elapsed <= 3000) {
+    // --- BÔNUS DE PORCENTAGEM DE TEMPO ---
+    const timePercentage = answerData.elapsed / totalTimeMs;
+
+    if (timePercentage <= 0.25) {
       points += 50;
-    } else if (elapsed <= 6000) {
-      points += 30;
+    } else if (timePercentage <= 0.50) {
+      points += 30; 
     } else {
       points += 10;
     }
 
-    players.set(playerId, {
+    // --- BÔNUS DE ORDEM DE CHEGADA ---
+    if (index === 0) points += 20;
+    else if (index === 1) points += 10;
+    else if (index === 2) points += 5;
+
+    // Atualiza o estado do jogador
+    players.set(answerData.playerId, {
       ...player,
       score: player.score + points,
       correctAnswers: player.correctAnswers + 1,
     });
-  }
+  });
 
   rooms.set(room.code, room);
 
