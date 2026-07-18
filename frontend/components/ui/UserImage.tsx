@@ -5,7 +5,7 @@ interface UserImagerProps {
 }
 
 export default function UserImage({ seed, className, nickname }: UserImagerProps) {
-    const pastelPalette = "ffb3ba,ffdfba,ffffba,baffc9,bae1ff,d0c0e5,b6e3f4,f3c4fb,caffbf,fdffb6";
+    const pastelPalette = "baffc9,bae1ff,d0c0e5,b6e3f4,caffbf,9bf6ff,a0c4ff,bdb2ff";
 
     return (
         <img

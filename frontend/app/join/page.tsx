@@ -7,6 +7,8 @@ import FormUser from "@/components/setup/FormUser";
 import type { PlayerSession } from "@/lib/storage/player-session";
 import { saveRoomSession } from "@/lib/storage/room-session";
 import socket from "@/lib/socket";
+import { useSounds } from "@/hooks/useSounds";
+import SoundButton from "@/components/ui/SoundButton";
 
 type PublicRoom = {
     code: string;
@@ -34,6 +36,8 @@ export default function JoinRoom() {
     const [loadingRooms, setLoadingRooms] = useState(true);
     const [error, setError] = useState("");
 
+    const { click } = useSounds();
+
     useEffect(() => {
         let mounted = true;
         async function loadPublicRooms() {
@@ -57,11 +61,13 @@ export default function JoinRoom() {
     }, []);
 
     function handleJoinPublicRoom(room: PublicRoom) {
+        click()
         setRoomCode(room.code);
         setError("");
     }
 
     function handleJoin(session: PlayerSession) {
+        click()
         const normalizedCode = roomCode.trim().toUpperCase();
 
         if (!normalizedCode) {
@@ -90,7 +96,7 @@ export default function JoinRoom() {
 
     return (
         <main className="flex min-h-[90vh] flex-col items-center justify-center gap-8 md:flex-row p-4 md:p-8">
-
+            <SoundButton className="absolute top-4 right-4 md:top-8 md:right-8 z-50" />
             <FormUser
                 mode="join"
                 onSubmit={handleJoin}
@@ -125,8 +131,8 @@ export default function JoinRoom() {
                                         type="button"
                                         onClick={() => handleJoinPublicRoom(room)}
                                         className={`rounded-xl border p-4 text-left transition-all cursor-pointer ${isSelected
-                                                ? "border-[var(--color-secondary)] bg-[var(--color-secondary)]/10 shadow-md"
-                                                : "border-[var(--border-color)] bg-[var(--background)] hover:border-[var(--color-secondary)]/50"
+                                            ? "border-[var(--color-secondary)] bg-[var(--color-secondary)]/10 shadow-md"
+                                            : "border-[var(--border-color)] bg-[var(--background)] hover:border-[var(--color-secondary)]/50"
                                             }`}
                                     >
                                         <div className="flex items-start justify-between gap-4">

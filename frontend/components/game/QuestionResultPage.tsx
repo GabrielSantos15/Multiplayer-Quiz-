@@ -7,6 +7,8 @@ import { useWindowSize } from "react-use";
 
 import type { QuestionResult } from "@/interfaces/Game";
 import { useGame } from "@/providers/GameProvider";
+import { useSounds } from "@/hooks/useSounds";
+import { useEffect } from "react";
 
 interface QuestionResultProps {
   result: QuestionResult;
@@ -18,7 +20,19 @@ export default function QuestionResultPage({
   const { selectedAnswer, ranking } = useGame();
   const { width, height } = useWindowSize(); 
 
+  const { correct, wrong } = useSounds();
+
   const isCorrect = selectedAnswer === result.correctAnswer;
+
+useEffect(() => {
+    if (isCorrect) {
+      correct();
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+    } else {
+      wrong();
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]); 
+    }
+  }, [isCorrect, correct, wrong]);
 
   return (
     <section>

@@ -11,6 +11,8 @@ import GameEndedPage from "@/components/game/GameEndedPage";
 import socket from "@/lib/socket";
 import { getOrCreatePlayerId } from "@/lib/player";
 import { motion, AnimatePresence } from "framer-motion";
+import SoundButton from "@/components/ui/SoundButton";
+import { useSounds } from "@/hooks/useSounds";
 
 export default function GamePage() {
     const {
@@ -26,6 +28,7 @@ export default function GamePage() {
     const router = useRouter();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { click } = useSounds();
 
     useEffect(() => {
         if (!room) { router.replace("/join"); }
@@ -40,12 +43,19 @@ export default function GamePage() {
         return (
             <GameEndedPage
                 ranking={ranking}
-                onPlayAgain={() => socket.emit("room:restart", {
-                    roomCode: room.code,
-                    playerId: getOrCreatePlayerId(),
-                })}
-                onBack={() => router.push(`/`)}
+                onPlayAgain={() => {
+                    click();
+                    socket.emit("room:restart", {
+                        roomCode: room.code,
+                        playerId: getOrCreatePlayerId(),
+                    });
+                }}
+                onBack={() => {
+                    click();
+                    router.push(`/`);
+                }}
             />
+
         );
     }
 
@@ -61,7 +71,7 @@ export default function GamePage() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 bg-black/50"
-                            onClick={() => setIsMobileMenuOpen(false)}
+                            onClick={() => { setIsMobileMenuOpen(false) }}
                         />
 
                         <motion.div
@@ -81,7 +91,7 @@ export default function GamePage() {
                                     )}
                                 </div>
                                 <button
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    onClick={() => { click(); setIsMobileMenuOpen(false) }}
                                     className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
@@ -135,22 +145,28 @@ export default function GamePage() {
                 </main>
 
                 {/*  Topo Mobile / Barra Lateral Direita Desktop */}
-                <div className="order-first flex justify-between items-center w-full self-start lg:order-last lg:flex-col lg:items-end lg:pt-4">
+                <div className="order-first flex justify-between items-center w-full self-start lg:order-last lg:flex-col lg:items-end lg:gap-4 lg:pt-4">
 
-                    {/* Botão menu ( Mobile) */}
-                    <button
-                        onClick={() => setIsMobileMenuOpen(true)}
-                        className="flex items-center gap-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-3 font-bold shadow-sm lg:hidden hover:bg-[var(--bg-secondary)] transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
-                        Sala {room.code}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => { click(); setIsMobileMenuOpen(true) }}
+                            className="flex items-center gap-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-3 font-bold shadow-sm lg:hidden hover:bg-[var(--bg-secondary)] transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
+                            Sala {room.code}
+                        </button>
+
+                        <SoundButton className="lg:hidden" />
+                    </div>
 
                     {currentQuestion && (
-                        <Timer
-                            timeLeft={timeLeft}
-                            timeLimit={room?.questionTime}
-                        />
+                        <div className="flex flex-col items-center gap-4">
+                            <Timer
+                                timeLeft={timeLeft}
+                                timeLimit={room?.questionTime}
+                            />
+                            <SoundButton className="hidden lg:flex" />
+                        </div>
                     )}
                 </div>
             </div>

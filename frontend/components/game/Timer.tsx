@@ -1,3 +1,6 @@
+import { useSounds } from "@/hooks/useSounds";
+import { useEffect } from "react";
+
 type TimerProps = {
     timeLeft: number;
     timeLimit: number;
@@ -12,6 +15,20 @@ export default function Timer({
 
     const progress = Math.max(0, timeLeft / timeLimit);
     const strokeDashoffset = circumference * (1 - progress);
+
+    const { countdown,stopCountdown } = useSounds();
+
+    useEffect(() => {
+        if (timeLeft === 5) {
+            countdown();
+        }
+    }, [timeLeft, countdown]);
+
+    useEffect(() => {
+        return () => {
+            stopCountdown();
+        };
+    }, [stopCountdown]);
 
     const color =
         progress > 0.5

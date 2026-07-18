@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useGame } from "@/providers/GameProvider";
+import { useSounds } from "@/hooks/useSounds"; // <-- Importação do seu hook
 
 import WorldMapQuestion from "./WorldMapQuestion";
 
@@ -14,6 +15,7 @@ export default function Quiz() {
         answer,
     } = useGame();
 
+    const { click } = useSounds(); 
     const [selectedOption, setSelectedOption] = useState("");
 
     useEffect(() => {
@@ -31,7 +33,7 @@ export default function Quiz() {
     }
 
     return (
-        <article className="mx-auto w-full mx-auto  rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-6 shadow-lg">
+        <article className="mx-auto w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-6 shadow-lg">
             <h3 className="mb-6 flex gap-3 text-xl font-semibold">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-bold text-white">
                     {(questionIndex ?? 0) + 1}
@@ -81,7 +83,10 @@ export default function Quiz() {
                                 className="hidden"
                                 checked={selected}
                                 disabled={answered}
-                                onChange={() => setSelectedOption(option)}
+                                onChange={() => {
+                                    setSelectedOption(option);
+                                    click(); 
+                                }}
                             />
 
                             {option}
@@ -93,7 +98,10 @@ export default function Quiz() {
             <button
                 type="button"
                 disabled={!selectedOption || answered}
-                onClick={() => answer(selectedOption)}
+                onClick={() => {
+                    click(); 
+                    answer(selectedOption);
+                }}
                 className={`
                     mt-6 w-full rounded-xl py-3 font-semibold text-white
                     transition-all duration-200 bg-[var(--color-primary)]

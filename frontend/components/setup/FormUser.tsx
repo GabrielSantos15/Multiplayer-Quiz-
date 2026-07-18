@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { startSession, type PlayerSession } from "@/lib/storage/player-session";
-import UserImage from "../ui/userImage/UserImage";
+import UserImage from "../ui/UserImage";
 import { IoReload } from "react-icons/io5";
 
 interface FormUserProps {

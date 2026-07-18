@@ -16,6 +16,8 @@ import {
   BookOpen,
   Gamepad2,
 } from "lucide-react";
+import { useSounds } from "@/hooks/useSounds";
+import SoundButton from "@/components/ui/SoundButton";
 
 type QuizDifficulty = "easy" | "medium" | "hard";
 
@@ -51,7 +53,10 @@ export default function CreateRoom() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { click } = useSounds();
+
   function handlePlayerCreated(session: PlayerSession) {
+    click()
     setError("");
     setLoading(true);
 
@@ -102,7 +107,7 @@ export default function CreateRoom() {
 
   return (
     <main className="flex min-h-[90vh] flex-col items-center justify-center gap-8  md:flex-row p-4 md:p-8">
-
+      <SoundButton className="absolute top-4 right-4 md:top-8 md:right-8 z-50" />
       {/*Formulário do Usuário */}
       <FormUser
         mode="create"
@@ -149,7 +154,7 @@ export default function CreateRoom() {
                   <button
                     key={item.value}
                     type="button"
-                    onClick={() => setDifficulty(item.value)}
+                    onClick={() => { click(); setDifficulty(item.value) }}
                     className={`rounded-2xl border p-4 text-left transition-all cursor-pointer ${isSelected
                       ? "border-[var(--color-secondary)] bg-[var(--color-secondary)]/10 shadow-md scale-[1.01]"
                       : "border-[var(--border-color)] hover:bg-black/5"
@@ -185,12 +190,12 @@ export default function CreateRoom() {
 
               <button
                 type="button"
-                onClick={() => setIsPublic(!isPublic)}
+                onClick={() => { click(); setIsPublic(!isPublic) }}
                 className="flex w-full items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--background)] p-3 transition-all hover:border-[var(--color-secondary)] cursor-pointer h-[50px] shadow-sm"
               >
                 <div className="flex items-center gap-2">
                   {isPublic ? (
-                    <Globe size={18} className="text-blue-500 animate-[spin_4s_linear_infinite]" />
+                    <Globe size={18} className="text-blue-500" />
                   ) : (
                     <Lock size={18} className="text-red-500" />
                   )}
@@ -220,9 +225,10 @@ export default function CreateRoom() {
               <div className="relative">
                 <select
                   value={questionsAmount}
-                  onChange={(event) => setQuestionsAmount(Number(event.target.value))}
+                  onChange={(event) => { click(); setQuestionsAmount(Number(event.target.value)) }}
                   className="w-full appearance-none rounded-xl border border-[var(--border-color)] bg-[var(--background)] p-3 pr-10 h-[50px] outline-none focus:border-[var(--color-secondary)] cursor-pointer text-sm font-medium"
                 >
+                  <option value={1}>1</option>
                   <option value={5}>5</option>
                   <option value={10}>10</option>
                   <option value={15}>15</option>
@@ -244,8 +250,10 @@ export default function CreateRoom() {
               <div className="relative">
                 <select
                   value={questionTime}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    click();
                     setQuestionTime(Number(event.target.value))
+                  }
                   }
                   className="w-full appearance-none rounded-xl border border-[var(--border-color)] bg-[var(--background)] p-3 pr-10 h-[50px] outline-none focus:border-[var(--color-secondary)] cursor-pointer text-sm font-medium"
                 >

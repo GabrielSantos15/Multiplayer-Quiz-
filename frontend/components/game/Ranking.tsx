@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Player } from "@/interfaces/Player";
 import { getOrCreatePlayerId } from "@/lib/player";
-import UserImage from "../ui/userImage/UserImage";
+import UserImage from "../ui/UserImage";
 
 interface RankingProps {
     ranking: Player[];

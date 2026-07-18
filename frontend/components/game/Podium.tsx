@@ -3,7 +3,7 @@
 import { Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Player } from "@/interfaces/Player";
-import UserImage from "../ui/userImage/UserImage";
+import UserImage from "../ui/UserImage";
 
 interface PodiumProps {
   ranking: Player[];

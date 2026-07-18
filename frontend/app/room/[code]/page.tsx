@@ -6,8 +6,9 @@ import { useRoom } from "@/hooks/useRoom";
 import { usePlayer } from "@/hooks/usePlayer";
 import { clearRoomSession } from "@/lib/storage/room-session";
 import socket from "@/lib/socket";
-import UserImage from "@/components/ui/userImage/UserImage";
+import UserImage from "@/components/ui/UserImage";
 import { LogOut, Play } from "lucide-react"; // Sugestão: Ícones para os botões!
+import { useSounds } from "@/hooks/useSounds";
 
 const categoryLabels = {
     geography: "Geografia",
@@ -15,12 +16,13 @@ const categoryLabels = {
 
 export default function RoomPage() {
     const router = useRouter();
-
+    const { click } = useSounds();
     const { room, playerId, error, roomCode } = useRoom();
     const { session } = usePlayer();
 
     function handleStart() {
         if (!session || !roomCode) return;
+        click()
 
         socket.emit("game:start", {
             roomCode,
@@ -29,6 +31,7 @@ export default function RoomPage() {
     }
 
     function handleLeave() {
+        click()
         clearRoomSession();
         router.push("/");
     }
@@ -36,7 +39,7 @@ export default function RoomPage() {
     return (
         <main className="min-h-screen p-4 md:p-8 flex justify-center items-start">
             <div className="w-full max-w-4xl mt-4 md:mt-12">
-                
+
                 <header className="mb-8 flex items-center justify-between rounded-3xl bg-[var(--bg-surface)] p-6 md:p-8 border border-[var(--border-color)] shadow-sm">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-bold">
@@ -64,7 +67,7 @@ export default function RoomPage() {
                 )}
 
                 <section className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-6 md:p-8 shadow-xl">
-                    
+
                     {/* Informações da Sala */}
                     <div className="mb-8 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4 bg-[var(--background)] p-4 rounded-2xl border border-[var(--border-color)]">
                         <div className="flex flex-col">
@@ -87,7 +90,7 @@ export default function RoomPage() {
 
                     {/* Lista de Jogadores */}
                     <h2 className="mb-4 text-xl font-bold flex items-center gap-2">
-                        Jogadores 
+                        Jogadores
                         <span className="bg-[var(--color-secondary)]/10 text-[var(--color-secondary)] py-1 px-3 rounded-full text-sm">
                             {room?.players.length ?? 0} / 10
                         </span>
@@ -97,27 +100,27 @@ export default function RoomPage() {
                         {(room?.players ?? []).map((player) => {
                             const isMe = player.playerId === playerId;
                             const isHost = room?.hostId === player.playerId;
-                            
+
                             return (
                                 <li
                                     key={player.playerId}
                                     className={`flex items-center gap-4 rounded-2xl border p-4 transition-all duration-300
-                                        ${isMe 
-                                            ? "border-[var(--color-secondary)] bg-[var(--color-secondary)]/5 shadow-sm" 
+                                        ${isMe
+                                            ? "border-[var(--color-secondary)] bg-[var(--color-secondary)]/5 shadow-sm"
                                             : "border-[var(--border-color)] bg-[var(--background)]"
                                         } 
                                         ${!player.online ? "opacity-40 grayscale" : ""} 
                                     `}
                                 >
-                                    <UserImage 
-                                        seed={player.avatarSeed} 
-                                        nickname={player.nickname}  
-                                        className="h-14 w-14 rounded-full border-2 border-white shadow-sm bg-white" 
+                                    <UserImage
+                                        seed={player.avatarSeed}
+                                        nickname={player.nickname}
+                                        className="h-14 w-14 rounded-full border-2 border-white shadow-sm bg-white"
                                     />
 
                                     <div className="flex-1">
                                         <p className="font-semibold text-lg flex items-center gap-2">
-                                            {player.nickname} 
+                                            {player.nickname}
                                             {isMe && <span className="text-xs font-normal text-[var(--text-secondary)]">(Você)</span>}
                                         </p>
 

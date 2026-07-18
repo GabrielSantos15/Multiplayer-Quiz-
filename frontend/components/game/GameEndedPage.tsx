@@ -5,10 +5,12 @@ import { Trophy, Medal, RotateCcw, Home, Crown, Star, CheckCircle, XCircle, User
 
 import type { Player } from "@/interfaces/Player";
 import { getOrCreatePlayerId } from "@/lib/player";
-import UserImage from "../ui/userImage/UserImage";
+import UserImage from "../ui/UserImage";
 import Podium from "./Podium";
 import Ranking from "./Ranking";
 import { useGame } from "@/providers/GameProvider";
+import { useSounds } from "@/hooks/useSounds";
+import { useEffect } from "react";
 
 interface GameEndedPageProps {
   ranking: Player[];
@@ -25,7 +27,13 @@ export default function GameEndedPage({
   const { room } = useGame()
   const playerId = getOrCreatePlayerId();
 
+  const { finish } = useSounds();
+
   const player = ranking.find((p) => p.playerId === playerId);
+
+useEffect(() => {
+    finish();
+  }, [finish]);
 
   return (
     <section className="flex justify-evenly items-center flex-col md:flex-row flex-wrap-reverse relative">
@@ -76,11 +84,11 @@ export default function GameEndedPage({
           <div className="flex flex-row items-center gap-4">
             {
               room.hostId == playerId ?
-              <button onClick={onPlayAgain} className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-6 py-3 font-semibold text-white hover:brightness-110 transition cursor-pointer">
-                <Users size={18} />
-                Voltar ao Lobby
-              </button>:
-              <p>Espere o host reiniciar</p>
+                <button onClick={onPlayAgain} className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-6 py-3 font-semibold text-white hover:brightness-110 transition cursor-pointer">
+                  <Users size={18} />
+                  Voltar ao Lobby
+                </button> :
+                <p>Espere o host reiniciar</p>
             }
             <button onClick={onBack} className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] px-6 py-3 font-semibold hover:bg-[var(--bg-primary)] transition cursor-pointer">
               <LogOut size={18} />
